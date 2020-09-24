@@ -1,0 +1,102 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  generation: 2
+  labels:
+    app: cims-clinicalnote-v1-svc
+    version: v1
+  name: cims-clinicalnote-v1-svc-v1
+spec:
+  replicas: 1
+  selector:
+    app: cims-clinicalnote-v1-svc
+    deploymentconfig: cims-clinicalnote-v1-svc
+    version: v1
+  template:
+    metadata:
+      labels:
+        app: cims-clinicalnote-v1-svc
+        deploymentconfig: cims-clinicalnote-v1-svc
+        version: v1
+    spec:
+      serviceAccount: istiosrv
+      serviceAccountName: istiosrv          
+      containers:                     
+        - imagePullPolicy: Always
+          image: registry.cn-hangzhou.aliyuncs.com/shenkonghui/app
+          name: cims-clinicalnote-v1-svc
+          env:
+          - name: version
+            value: v1
+          ports:
+            - containerPort: 8080
+              protocol: TCP         
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+  test: false
+  triggers:
+    - type: ConfigChange
+---
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  generation: 2
+  labels:
+    app: cims-clinicalnote-v1-svc
+    version: v2
+  name: cims-clinicalnote-v1-svc-v2
+spec:
+  replicas: 1
+  selector:
+    app: cims-clinicalnote-v1-svc
+    deploymentconfig: cims-clinicalnote-v1-svc
+    version: v2
+  template:
+    metadata:
+      labels:
+        app: cims-clinicalnote-v1-svc
+        deploymentconfig: cims-clinicalnote-v1-svc
+        version: v2
+    spec:
+      serviceAccount: istiosrv
+      serviceAccountName: istiosrv
+      containers:
+        - imagePullPolicy: Always
+          image: registry.cn-hangzhou.aliyuncs.com/shenkonghui/app
+          name: cims-clinicalnote-v1-svc
+          env:
+          - name: version
+            value: v2
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+  test: false
+  triggers:
+    - type: ConfigChange
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: cims-clinicalnote-v1-svc
+  name: cims-clinicalnote-v1-svc
+spec:
+  ports:
+    - name: http-8080 # !!!!!!!!!!!! Change this to http-8080
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: tcp-8180  # !!!!!!!!!!!! Change this http/tcp-8180
+      port: 8180
+      protocol: TCP
+      targetPort: 8180
+  selector:
+    app: cims-clinicalnote-v1-svc
+  sessionAffinity: None
+  type: ClusterIP
